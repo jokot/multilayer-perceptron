@@ -4,7 +4,7 @@ from random import shuffle
 from random import uniform
 import numpy as np
 import matplotlib.pyplot as plt
-from math import log10
+from math import log
 
 ##Import data from file---------------------------------------------------------------------------------------------------------------------
 def import_data(file_name):
@@ -42,10 +42,11 @@ def str_to_int(dataset,column):
             row+=a
 
 def sigmoid(x):
-    return (1/(1+exp(-x)))
+
+    return 1/(1+exp(-x))
 
 def d_sigmoid(y):
-    return (y*(1-y))
+    return y*(1-y)
 
 def activation(row,weights,bias,neuron):
     activation_list = list()
@@ -53,7 +54,7 @@ def activation(row,weights,bias,neuron):
     for i in range(neuron):
         activ = bias[i]
         for j in range(len(row)):            
-            activ += weights[j+a] * row[j]
+            activ += weights[j+a] * row[i]
         a+=len(row)
         activation_list.append(sigmoid(activ))
     
@@ -64,15 +65,40 @@ def dweight(err,inp,activ,weights,bias):
     dweight_list = list()
     dbias_list = list()
 ##    dweight
-    for i in range(len(inp)):
-        for j in range(len(activ)):
+    for i in range(len(activ)):
+        for j in range(len(inp)):
             dweight = 0
-            dweight = err[j]*d_sigmoid(activ[j])*inp[i]
+            dweight = err[i]*d_sigmoid(activ[i])*inp[j]
             dweight_list.append(dweight)
 ##  dbias
     for j in range(len(activ)):
         dbias = 0
         dbias = err[j]*d_sigmoid(activ[j])
+        dbias_list.append(dbias)
+
+##  updating dweight and dbias
+    for k in range(len(dweight_list)):
+        dweight_list[k] = weights[k]-l_rate*dweight_list[k]
+        
+    for k in range(len(dbias_list)):
+        dbias_list[k] = bias[k]-l_rate*dbias_list[k]
+
+    return (dweight_list,dbias_list)
+
+def dweight_ho(inp,target,activ,weights,bias):
+    dweight_list = list()
+    dbias_list = list()
+
+    for i in range(len(activ)):
+        for j in range(len(inp)):
+            dweight = 0
+            dweight = -(target[i]-activ[i])*d_sigmoid(activ[i])*inp[j]
+            dweight_list.append(dweight)
+
+
+    for j in range(len(activ)):
+        dbias = 0
+        dbias = -(target[j]-activ[j])*d_sigmoid(activ[j])
         dbias_list.append(dbias)
 
 ##  updating dweight and dbias
@@ -106,19 +132,20 @@ def prediction(row,output):
         else:
             output[i]=0
     
+    
     for i in range(len(output)):
         if output[i]==row[i]:
            predict = 1
         else:
             predict = 0
-            
+    
     return predict
 
 def error(row,output):
     err_list = list()
     
     for i in range(len(output)):
-        err =(1/2)*((row[i]-output[i])**2)
+        err = (1/2)*((row[i]-output[i])**2)
         err_list.append(err)
         
     return err_list
@@ -197,9 +224,13 @@ def train(data_train):
             t_weights_ho = tranpose(weights_ho)
             error_h = error_hiden(err,t_weights_ho)
             
-            weights_ho, bias_ho = dweight(err,output_h,output_o,weights_ho,bias_ho)
+##            weights_ho = tranpose(weights_ho)
+            weights_ho, bias_ho = dweight_ho(output_h,row[4:],output_o,weights_ho,bias_ho)
+##            weights_ho = tranpose(weights_ho)
 
-            weights_ih,bias_ih = dweight(error_h,row[:4],output_h,weights_ih,bias_ih)
+##            weights_ih = tranpose(weights_ih)
+            weights_ih, bias_ih = dweight(error_h,row[:4],output_h,weights_ih,bias_ih)
+##            weights_ih = tranpose(weights_ih)
 
 
         error_train.append(sumError/len(data_train))
@@ -227,17 +258,17 @@ def validation(data_validation,weights_ih,bias_ih,weights_ho,bias_ho):
 
 def averrage():
     for i in error_train:
-        i = log10(i)
+        i = log(i)
     for j in accuracy_train:
-        j = log10(j)
+        j = log(j)
 
     for k in error_validation:
-        k = log10(k)
+        k = log(k)
     for l in accuracy_validation:
-        l = log10(l)
+        l = log(l)
 
     draw_grafik(error_train,error_validation,'Averrage Error','Error','Grafik Error Multilayer Perceptron')
-    draw_grafik(accuracy_train,accuracy_validation,'Acuracy Error','Error','Grafik Acuracy Multilayer Perceptron')
+    draw_grafik(accuracy_train,accuracy_validation,'Acuracy Error','Accuracy','Grafik Acuracy Multilayer Perceptron')
 
 ##draw grafik ---------------------------------------------------------------------------------------------------------------------
 def draw_grafik(data_train,data_validation,label,ylabel,title):
@@ -256,10 +287,10 @@ for i in range(len(dataset[0])-1):
     str_to_float(dataset,i)
 str_to_int(dataset,len(dataset[0])-1)
 
-l_rate = 0.1
+l_rate = 0.8
 #l_rate = 0.8
 perceptron = 3
-epoch = 300
+epoch = 30
 
 error_train = list()
 error_validation = list()
@@ -267,8 +298,3 @@ accuracy_train = list()
 accuracy_validation =list()
 
 multilayer_perceptron(dataset)
-
-
-
-
-

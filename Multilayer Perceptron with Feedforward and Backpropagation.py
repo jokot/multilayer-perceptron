@@ -5,6 +5,7 @@ from random import uniform
 import numpy as np
 import matplotlib.pyplot as plt
 from math import log
+import logging
 
 ##Import data from file---------------------------------------------------------------------------------------------------------------------
 def import_data(file_name):
@@ -126,12 +127,12 @@ def multilayer_perceptron(dataset):
 
 def prediction(row,output):
     predict = 0
+    
     for i in range(len(output)):
-        if output[i] > 0.5:
+        if output[i] == max(output):
            output[i]=1
         else:
             output[i]=0
-    
     
     for i in range(len(output)):
         if output[i]==row[i]:
@@ -165,19 +166,19 @@ def error_hiden(error_o,weights_o):
 
     return error_h
 
-def to_matrix(weight):
-    list_list = [[0 for i in range(3)] for j in range(perceptron)]
-    for i in range(3):
-        a=0
-        for j in range(perceptron):
-            list_list[i][j]= weight[j+a]
-        a+= perceptron
-
-    return list_list
-
-def to_list(matrix):
-    flat_list = [item for sublist in matrix for item in sublist]
-    return flat_list
+##def to_matrix(weight):
+##    list_list = [[0 for i in range(3)] for j in range(perceptron)]
+##    for i in range(3):
+##        a=0
+##        for j in range(perceptron):
+##            list_list[i][j]= weight[j+a]
+##        a+= perceptron
+##
+##    return list_list
+##
+##def to_list(matrix):
+##    flat_list = [item for sublist in matrix for item in sublist]
+##    return flat_list
 
 def tranpose(weight):
 ##    matrix = to_matrix(weight)
@@ -214,10 +215,12 @@ def train(data_train):
         for row in data_train:
             ##feedforward
             output_h = activation(row[:4],weights_ih,bias_ih,perceptron)
+            
             output_o = activation(output_h,weights_ho,bias_ho,3)
             
             err = error(row[4:],output_o)
             sumError += sum(err)
+            
             sumAccuracy += prediction(row[4:],output_o)
 
             ##backpropagation
@@ -234,6 +237,7 @@ def train(data_train):
 
 
         error_train.append(sumError/len(data_train))
+        
         accuracy_train.append(sumAccuracy/len(data_train))
 
     return (weights_ih,bias_ih,weights_ho,bias_ho)
@@ -247,6 +251,7 @@ def validation(data_validation,weights_ih,bias_ih,weights_ho,bias_ho):
         for row in data_validation:
             ##feedforward
             output_h = activation(row[:4],weights_ih,bias_ih,perceptron)
+            
             output_o = activation(output_h,weights_ho,bias_ho,3)
             
             err = error(row[4:],output_o)
@@ -259,13 +264,13 @@ def validation(data_validation,weights_ih,bias_ih,weights_ho,bias_ho):
 def averrage():
     for i in error_train:
         i = log(i)
-    for j in accuracy_train:
-        j = log(j)
+##    for j in accuracy_train:
+##        j = log(j)
 
     for k in error_validation:
         k = log(k)
-    for l in accuracy_validation:
-        l = log(l)
+##    for l in accuracy_validation:
+##        l = log(l)
 
     draw_grafik(error_train,error_validation,'Averrage Error','Error','Grafik Error Multilayer Perceptron')
     draw_grafik(accuracy_train,accuracy_validation,'Acuracy Error','Accuracy','Grafik Acuracy Multilayer Perceptron')
@@ -290,7 +295,7 @@ str_to_int(dataset,len(dataset[0])-1)
 l_rate = 0.8
 #l_rate = 0.8
 perceptron = 3
-epoch = 30
+epoch = 200
 
 error_train = list()
 error_validation = list()
